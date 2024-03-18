@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.cdnfonts.com/css/sf-pro-display"
+      rel="stylesheet"
+    />
+
+    <title>@Truebyair</title>
+  </head>
+  <body>
+    <h1 class="maintext1">WHO'S DAVID?</h1>
+
+    <div id="grainy-background"></div>
+    <div id="gradient-wrapper">
+      <div class="circle" id="c1"></div>
+      <div class="circle" id="c2"></div>
+      <div class="circle" id="c3"></div>
+    </div>
+
+    <script src="three.min.js"></script>
+    <script>
+      // Setup scene
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        120,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      camera.position.z = 5;
+
+      const renderer = new THREE.WebGLRenderer({ alpha: true }); // Set alpha to true for transparent background
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // Particle settings
+      const particleCount = 400;
+      const particles = new THREE.Geometry();
+
+      const particleMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.02, // Size of particles
+        transparent: true,
+        map: new THREE.TextureLoader().load(
+          "https://threejs.org/examples/textures/sprites/disc.png"
+        ),
+      });
+
+      // Create particles
+      for (let p = 0; p < particleCount; p++) {
+        const particle = new THREE.Vector3(
+          Math.random() * 10 - 5,
+          Math.random() * 10 - 5,
+          Math.random() * 10 - 5
+        );
+
+        particle.velocity = new THREE.Vector3(
+          (Math.random() - 0.5) / 100, // X velocity
+          (Math.random() - 0.5) / 100, // Y velocity
+          (Math.random() - 0.5) / 100 // Z velocity
+        );
+
+        particles.vertices.push(particle);
+      }
+
+      const particleSystem = new THREE.Points(particles, particleMaterial);
+      scene.add(particleSystem);
+
+      function resizeRenderer() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        renderer.setSize(width, height);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+      }
+
+      // Initial resize
+      resizeRenderer();
+
+      // Resize event listener
+      window.addEventListener("resize", resizeRenderer);
+
+      // Main render function
+      function animate() {
+        requestAnimationFrame(animate);
+
+        // Move particles slightly
+        particles.vertices.forEach((particle) => {
+          particle.add(particle.velocity);
+
+          // Wrap around if particles go too far
+          if (particle.x > 5) particle.x = -5;
+          if (particle.x < -5) particle.x = 5;
+          if (particle.y > 5) particle.y = -5;
+          if (particle.y < -5) particle.y = 5;
+          if (particle.z > 5) particle.z = -5;
+          if (particle.z < -5) particle.z = 5;
+        });
+
+        particleSystem.geometry.verticesNeedUpdate = true;
+
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      let mouseX = 0, mouseY = 0; // Initialize mouse coordinates
+let targetRotationX = 0, targetRotationY = 0; // Initialize target rotation angles
+let currentRotationX = 0, currentRotationY = 0; // Initialize current rotation angles
+let rotationSpeedX = 0, rotationSpeedY = 0; // Initialize rotation speeds
+const dampingFactor = 0.91; // Adjust damping to control how quickly rotation speed decreases
+
+document.addEventListener("mousemove", (event) => {
+    mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+    mouseY = 1 - 2 * (event.clientY / window.innerHeight);
+
+    // Update target rotation angles based on mouse movement
+    targetRotationX = mouseY * 0.1; // Adjust sensitivity to control rotation speed
+    targetRotationY = mouseX * 0.1; // Adjust sensitivity to control rotation speed
+});
+
+function a() {
+    // Calculate rotation speed based on the difference between current and target rotation angles
+    rotationSpeedX += (targetRotationX - currentRotationX) * 0.006; // Adjust acceleration
+    rotationSpeedY += (targetRotationY - currentRotationY) * 0.006; // Adjust acceleration
+
+    // Apply damping to rotation speed
+    rotationSpeedX *= dampingFactor;
+    rotationSpeedY *= dampingFactor;
+
+    // Smoothly update current rotation angles based on rotation speed
+    currentRotationX += rotationSpeedX;
+    currentRotationY += rotationSpeedY;
+
+    // Rotate the scene or particles
+    scene.rotation.x = currentRotationX;
+    scene.rotation.y = currentRotationY;
+
+    // Call animate function on the next animation frame
+    requestAnimationFrame(a);
+}
+
+// Start the animation loop
+a();
+
+    </script>
+    <script src="grained.js"></script>
+
+    <script>
+      var options = {
+        animate: true,
+        patternWidth: 500,
+        patternHeight: 392.62,
+        grainOpacity: 1,
+        grainDensity: 1,
+        grainWidth: 1,
+        grainHeight: 1,
+      };
+
+      grained("#grainy-background", options);
+    </script>
+
+    <script>
+     document.addEventListener("DOMContentLoaded", () => {
+    const container = document.getElementById("gradient-wrapper");
+    const circles = document.querySelectorAll(".circle");
+
+    circles.forEach((circle) => {
+        // Set initial position of the circle to be at the edge of the container
+        let posX = Math.random() < 0.5 ? 0 : container.offsetWidth - circle.offsetWidth;
+        let posY = Math.random() < 0.5 ? 0 : container.offsetHeight - circle.offsetHeight;
+
+        // Set random initial velocity
+        let velocityX = (Math.random() - 0.5) * 2;
+        let velocityY = (Math.random() - 0.5) * 2;
+
+        const moveCircle = () => {
+            // Move the circle
+            posX += velocityX;
+            posY += velocityY;
+
+            // Check if the circle hits the edges of the container
+            if (posX < 0 || posX > container.offsetWidth - circle.offsetWidth) {
+                // Reverse the velocity to keep the circle at the edge
+                velocityX *= -1;
+            }
+            if (posY < 0 || posY > container.offsetHeight - circle.offsetHeight) {
+                // Reverse the velocity to keep the circle at the edge
+                velocityY *= -1;
+            }
+
+            // Update circle's position
+            circle.style.left = `${posX}px`;
+            circle.style.top = `${posY}px`;
+
+            // Call moveCircle function on the next animation frame
+            requestAnimationFrame(moveCircle);
+        };
+
+        // Start moving the circle
+        moveCircle();
+    });
+});
+
+    </script>
+  </body>
+</html>
